@@ -5,8 +5,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BufferGeometry,
   Float32BufferAttribute,
+  Line,
   LineDashedMaterial,
-  type Line,
 } from "three";
 import { getAtlasSnapshot, subscribeAtlas } from "@/lib/atlas-store";
 import { greatCircle, relatedSlugs } from "@/lib/trade";
@@ -24,21 +24,37 @@ function routePoints(from: string, to: string) {
 }
 
 function GrowingRoute({ pts }: { pts: [number, number, number][] }) {
-  const line = useRef<Line>(null);
+  const line = useRef<Line | null>(null);
   const t = useRef(0);
-  const geom = useMemo(() => {
+  const object = useMemo(() => {
     const g = new BufferGeometry();
     g.setAttribute(
       "position",
       new Float32BufferAttribute(pts.flat(), 3),
     );
-    return g;
+    const mat = new LineDashedMaterial({
+      color: "#0a0a0a",
+      dashSize: 0.035,
+      gapSize: 0.028,
+      transparent: true,
+      opacity: 0,
+    });
+    const obj = new Line(g, mat);
+    obj.computeLineDistances();
+    obj.raycast = () => undefined;
+    return obj;
   }, [pts]);
+
+  useEffect(() => {
+    return () => {
+      object.geometry.dispose();
+      (object.material as LineDashedMaterial).dispose();
+    };
+  }, [object]);
 
   useFrame((_, dt) => {
     t.current = Math.min(1, t.current + dt / 0.5);
-    const obj = line.current;
-    if (!obj) return;
+    const obj = line.current ?? object;
     const n = Math.max(2, Math.round((pts.length - 1) * t.current) + 1);
     obj.geometry.setDrawRange(0, n);
     const mat = obj.material as LineDashedMaterial;
@@ -49,15 +65,12 @@ function GrowingRoute({ pts }: { pts: [number, number, number][] }) {
   if (pts.length < 2) return null;
 
   return (
-    <line ref={line as never} geometry={geom} raycast={() => {}}>
-      <lineDashedMaterial
-        color="#0a0a0a"
-        dashSize={0.035}
-        gapSize={0.028}
-        transparent
-        opacity={0}
-      />
-    </line>
+    <primitive
+      object={object}
+      ref={(node: Line | null) => {
+        line.current = node;
+      }}
+    />
   );
 }
 

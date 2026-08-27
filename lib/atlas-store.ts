@@ -1,7 +1,7 @@
 import type { AtlasClass } from "@/lib/atlas";
 
 export type AtlasFilter = "all" | AtlasClass;
-export type AtlasView = "list";
+export type AtlasView = "globe" | "list";
 
 export type AtlasSnapshot = {
   filter: AtlasFilter;
