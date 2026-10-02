@@ -22,11 +22,16 @@ const groups = [
 export default function AboutPage() {
   return (
     <main id="top">
-      <PageHead index="04" label="ABOUT" title="Built by hand. Finished properly." />
+      <PageHead
+        index="04"
+        label="ABOUT"
+        title="Built by hand. Finished properly."
+        align="center"
+      />
       <div className="px-[var(--gutter)] pb-24 lg:px-[var(--space-8)]">
-        <p className="type-lead measure">{about.lede}</p>
+        <p className="type-lead measure mx-auto text-center">{about.lede}</p>
 
-        <div className="mt-16 grid items-start gap-12 lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="mx-auto mt-16 grid max-w-5xl items-start gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:pl-8">
           <PortraitPlate />
           <div>
             {about.body.map((paragraph) => (
